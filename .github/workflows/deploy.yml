@@ -46,6 +46,7 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v3
       - name: Set image repo
         run: echo "IMAGE_REPO=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
       - name: Login to GitHub Container Registry
@@ -54,6 +55,10 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build backend Docker image
+        run: docker build -t ecolearn-backend ./backend
+      - name: Build frontend Docker image
+        run: docker build -t ecolearn-frontend ./frontend
       - name: Push backend image
         run: |
           docker tag ecolearn-backend ghcr.io/$IMAGE_REPO/backend:latest
