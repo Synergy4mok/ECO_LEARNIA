@@ -39,3 +39,11 @@ CREATE TABLE IF NOT EXISTS sessions (
     login_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     logout_time TIMESTAMP NULL
 );
+
+CREATE TABLE IF NOT EXISTS chats (
+    id SERIAL PRIMARY KEY,
+    user_id INT REFERENCES users(id),
+    user_message TEXT,
+    ai_response TEXT,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
