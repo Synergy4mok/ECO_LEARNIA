@@ -1,9 +1,6 @@
 name: CI/CD Pipeline
 
-on:
-  push:
-    branches:
-      - main
+on: [push, pull_request]
 
 jobs:
   test:
@@ -48,21 +45,30 @@ jobs:
   push:
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      packages: write
     steps:
+      - uses: actions/checkout@v3
+      - name: Set image repo
+        run: echo "IMAGE_REPO=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v2
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build backend Docker image
+        run: docker build -t ecolearn-backend ./backend
+      - name: Build frontend Docker image
+        run: docker build -t ecolearn-frontend ./frontend
       - name: Push backend image
         run: |
-          docker tag ecolearn-backend ghcr.io/${{ github.repository }}/backend:latest
-          docker push ghcr.io/${{ github.repository }}/backend:latest
+          docker tag ecolearn-backend ghcr.io/$IMAGE_REPO/backend:latest
+          docker push ghcr.io/$IMAGE_REPO/backend:latest
       - name: Push frontend image
         run: |
-          docker tag ecolearn-frontend ghcr.io/${{ github.repository }}/frontend:latest
-          docker push ghcr.io/${{ github.repository }}/frontend:latest
+          docker tag ecolearn-frontend ghcr.io/$IMAGE_REPO/frontend:latest
+          docker push ghcr.io/$IMAGE_REPO/frontend:latest
 
   deploy:
     needs: push
